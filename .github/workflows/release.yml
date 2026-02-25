@@ -15,14 +15,16 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Setup .NET Framework
-      uses: microsoft/setup-msbuild@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'
 
     - name: Restore NuGet packages
-      run: nuget restore ShopProToTrMenuConverter.csproj
+      run: dotnet restore ShopProToTrMenuConverter.csproj
 
     - name: Build project
-      run: msbuild ShopProToTrMenuConverter.csproj /p:Configuration=Release /p:Platform="Any CPU" /p:PlatformTarget="AnyCPU"
+      run: dotnet build ShopProToTrMenuConverter.csproj --configuration Release --no-restore
 
     - name: Create release zip
       run: |

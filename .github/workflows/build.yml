@@ -18,10 +18,10 @@ jobs:
       uses: microsoft/setup-msbuild@v2
 
     - name: Restore NuGet packages
-      run: nuget restore ShopProToTrMenuConverter.csproj
+      run: dotnet restore ShopProToTrMenuConverter.csproj
 
     - name: Build project
-      run: msbuild ShopProToTrMenuConverter.csproj /p:Configuration=Release /p:Platform="Any CPU" /p:PlatformTarget="AnyCPU"
+      run: dotnet build ShopProToTrMenuConverter.csproj --configuration Release --no-restore
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
