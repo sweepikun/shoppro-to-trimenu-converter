@@ -285,12 +285,10 @@ namespace ShopProToTrMenuConverter
         public YamlSerializer()
         {
             _deserializer = new DeserializerBuilder()
-                .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .IgnoreUnmatchedProperties()
                 .Build();
 
             _serializer = new SerializerBuilder()
-                .WithNamingConvention(NamingConventions.Null)
                 .WithTypeInspector(inner => new YamlDotNet.Serialization.TypeInspectors.ReadableAndWritablePropertiesTypeInspector(inner))
                 .Build();
         }
