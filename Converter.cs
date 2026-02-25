@@ -74,13 +74,16 @@ namespace ShopProToTrMenuConverter
                     string key = kvp.Key;
                     var shopItem = kvp.Value;
 
+                    // 处理Lore，替换占位符
+                    var processedLore = ProcessLore(shopItem.Lore, shopItem.Price);
+
                     var trmenuIcon = new TrMenuIcon
                     {
                         Display = new TrMenuIconDisplay
                         {
                             Material = ConvertMaterial(shopItem.Material),
                             Name = shopItem.Name ?? "",
-                            LORE = shopItem.Lore ?? new List<string>()
+                            LORE = processedLore
                         },
                         Actions = new TrMenuIconActions()
                     };
@@ -163,6 +166,39 @@ namespace ShopProToTrMenuConverter
                     string customData = parts[2];
                     return $"{itemId}{{model-data:{customData}}}";
                 }
+                else if (parts.Length == 2)
+                {
+                    return parts[1];
+                }
+                return material;
+            }
+
+            // 标准材质保持不变 (如 REDSTONE, COBBLESTONE 等)
+            return material;
+        }
+
+        /// <summary>
+        /// 处理Lore，替换占位符为实际值
+        /// </summary>
+        private List<string> ProcessLore(List<string> originalLore, decimal price)
+        {
+            if (originalLore == null || originalLore.Count == 0)
+                return new List<string> { " " };
+
+            var result = new List<string>();
+            decimal price64 = price * 64;
+
+            foreach (var line in originalLore)
+            {
+                var processedLine = line
+                    .Replace("${price}", price.ToString())
+                    .Replace("${price64}", price64.ToString())
+                    .Replace("${name}", "该物品"); // 可以改为实际物品名称
+                result.Add(processedLine);
+            }
+
+            return result;
+        }
                 else if (parts.Length == 2)
                 {
                     return parts[1];
