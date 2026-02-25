@@ -1,0 +1,48 @@
+name: Build
+
+on:
+  push:
+    branches: [ master, main ]
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET Framework
+      uses: microsoft/setup-msbuild@v2
+
+    - name: Restore NuGet packages
+      run: nuget restore ShopProToTrMenuConverter.csproj
+
+    - name: Build project
+      run: msbuild ShopProToTrMenuConverter.csproj /p:Configuration=Release /p:Platform="Any CPU" /p:PlatformTarget="AnyCPU"
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: ShopProToTrMenuConverter-Windows
+        path: |
+          ShopProToTrMenuConverter/bin/Release/net472/
+          !ShopProToTrMenuConverter/bin/Release/net472/*.pdb
+        retention-days: 7
+
+    - name: Create release zip
+      run: |
+        $outputDir = "ShopProToTrMenuConverter/bin/Release/net472"
+        $zipPath = "ShopProToTrMenuConverter-net472.zip"
+        if (Test-Path $zipPath) { Remove-Item $zipPath }
+        Compress-Archive -Path "$outputDir/*" -DestinationPath $zipPath -Force
+      shell: pwsh
+
+    - name: Upload release zip
+      uses: actions/upload-artifact@v4
+      with:
+        name: ShopProToTrMenuConverter-net472
+        path: ShopProToTrMenuConverter-net472.zip
+        retention-days: 7

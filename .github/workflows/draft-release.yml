@@ -1,0 +1,54 @@
+name: Draft Release
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  draft-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Generate changelog
+      id: changelog
+      run: |
+        # 获取最近的提交（排除合并提交）
+        COMMITS=$(git log --oneline --no-merges $(git describe --tags --abbrev=0 2>/dev/null || echo "")..HEAD)
+        
+        if [ -z "$COMMITS" ]; then
+          echo "没有新提交需要发布"
+          echo "changelog=" >> $GITHUB_OUTPUT
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+        else
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "## 变更日志" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "$COMMITS" | while read line; do
+            echo "- $line" >> $GITHUB_OUTPUT
+          done
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Create or update draft release
+      if: steps.changelog.outputs.has_changes == 'true'
+      run: |
+        TAG_NAME="draft-$(date +%Y%m%d-%H%M%S)"
+        gh release create $TAG_NAME --draft --title "Draft Release $TAG_NAME" --notes "${{ steps.changelog.outputs.changelog }}"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Comment on PRs
+      if: steps.changelog.outputs.has_changes == 'true' && github.event_name == 'pull_request'
+      run: |
+        echo "Draft release created for this PR!" | gh pr comment ${{ github.event.pull_request.number }} --body-file -
