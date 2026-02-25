@@ -260,12 +260,12 @@ namespace ShopProToTrMenuConverter
         public YamlSerializer()
         {
             _deserializer = new DeserializerBuilder()
-                .WithNamingConvention(new HyphenatedNamingConvention())
+                .WithNamingConvention(HyphenatedNamingConvention.Instance)
                 .IgnoreUnmatchedProperties()
                 .Build();
 
             _serializer = new SerializerBuilder()
-                .WithNamingConvention(new HyphenatedNamingConvention())
+                .WithNamingConvention(HyphenatedNamingConvention.Instance)
                 .Build();
         }
 
