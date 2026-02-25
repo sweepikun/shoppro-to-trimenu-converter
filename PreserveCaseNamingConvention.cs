@@ -1,3 +1,4 @@
+using System;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace ShopProToTrMenuConverter
