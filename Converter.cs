@@ -22,14 +22,10 @@ namespace ShopProToTrMenuConverter
         /// <summary>
         /// 转换单个ShopPro商店配置文件为TrMenu格式
         /// </summary>
-        /// <param name="shopproFile">ShopPro配置文件路径</param>
-        /// <param name="outputFile">输出文件路径</param>
-        /// <returns>转换后的TrMenu配置</returns>
         public TrMenuConfig Convert(string shopproFile, out string menuName)
         {
             var shopproConfig = _yamlSerializer.Deserialize<ShopProConfig>(shopproFile);
             menuName = shopproConfig.Name ?? "商店";
-
             return Convert(shopproConfig);
         }
 
@@ -164,7 +160,7 @@ namespace ShopProToTrMenuConverter
                 {
                     string itemId = parts[1];
                     string customData = parts[2];
-                    return $"{itemId}{{model-data:{custom_data}}}";
+                    return $"{itemId}{{model-data:{customData}}}";
                 }
                 else if (parts.Length == 2)
                 {
@@ -175,26 +171,6 @@ namespace ShopProToTrMenuConverter
 
             // 标准材质保持不变 (如 REDSTONE, COBBLESTONE 等)
             return material;
-        }
-                else if (parts.Length == 2)
-                {
-                    return parts[1];
-                }
-                return material;
-            }
-
-            // 标准材质保持不变（保持ShopPro的原始格式）
-            return material;
-        }
-                else if (parts.Length == 2)
-                {
-                    return parts[1].ToLower();
-                }
-                return material;
-            }
-
-            // 普通材质转小写并移除下划线
-            return material.ToLower().Replace('_', ' ');
         }
 
         /// <summary>
