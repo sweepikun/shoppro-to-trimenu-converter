@@ -176,58 +176,27 @@ namespace ShopProToTrMenuConverter
         /// <summary>
         /// 创建购买（出售商店）动作
         /// </summary>
-        private List<Dictionary<string, object>> CreateBuyAction(string material, decimal price, int amount)
+        private List<string> CreateBuyAction(string material, decimal price, int amount)
         {
-            return new List<Dictionary<string, object>>
-            {
-                new Dictionary<string, object>
-                {
-                    ["condition"] = $"@money >= {price * amount}",
-                    ["actions"] = new List<string> { $"op: shop buy {amount} {material} {price}" }
-                },
-                new Dictionary<string, object>
-                {
-                    ["deny"] = new List<string> { "msg: &c金币不足！" }
-                }
-            };
+            // 使用占位符命令，用户可以自行修改为实际使用的商店命令
+            // 例如: "command: /buy {material} {amount}"
+            return new List<string> { $"command: /shop buy {amount} {material} {price}" };
         }
 
         /// <summary>
         /// 创建出售（收购商店）动作
         /// </summary>
-        private List<Dictionary<string, object>> CreateSellAction(string material, decimal price, int amount)
+        private List<string> CreateSellAction(string material, decimal price, int amount)
         {
-            return new List<Dictionary<string, object>>
-            {
-                new Dictionary<string, object>
-                {
-                    ["condition"] = "@item held",
-                    ["actions"] = new List<string> { $"op: shop sell {amount} {material} {price}" }
-                },
-                new Dictionary<string, object>
-                {
-                    ["deny"] = new List<string> { "msg: &c你还没有拿任何物品！" }
-                }
-            };
+            return new List<string> { $"command: /shop sell {amount} {material} {price}" };
         }
 
         /// <summary>
         /// 创建出售背包所有物品的动作
         /// </summary>
-        private List<Dictionary<string, object>> CreateSellAllAction(string material, decimal price)
+        private List<string> CreateSellAllAction(string material, decimal price)
         {
-            return new List<Dictionary<string, object>>
-            {
-                new Dictionary<string, object>
-                {
-                    ["condition"] = "@inv empty check",
-                    ["deny"] = new List<string> { "msg: &c你的背包是空的！" }
-                },
-                new Dictionary<string, object>
-                {
-                    ["actions"] = new List<string> { $"op: shop sell all {material} {price}" }
-                }
-            };
+            return new List<string> { $"command: /shop sell all {material} {price}" };
         }
 
         /// <summary>
