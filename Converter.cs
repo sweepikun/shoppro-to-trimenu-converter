@@ -37,6 +37,7 @@ namespace ShopProToTrMenuConverter
             var trmenuConfig = new TrMenuConfig
             {
                 Title = new List<string> { shopproConfig.Title ?? shopproConfig.Name ?? "商店" },
+                Chest = shopproConfig.Slots != null ? shopproConfig.Slots.Count : 6,
                 Layout = shopproConfig.Slots ?? new List<string>(),
                 Options = new TrMenuOptions
                 {
@@ -174,29 +175,64 @@ namespace ShopProToTrMenuConverter
         }
 
         /// <summary>
-        /// 创建购买（出售商店）动作
+        /// 创建购买（出售商店）动作 - 使用TrMenu原生条件判断
         /// </summary>
-        private List<string> CreateBuyAction(string material, decimal price, int amount)
+        private List<Dictionary<string, object>> CreateBuyAction(string material, decimal price, int amount)
         {
-            // 使用占位符命令，用户可以自行修改为实际使用的商店命令
-            // 例如: "command: /buy {material} {amount}"
-            return new List<string> { $"command: /shop buy {amount} {material} {price}" };
+            return new List<Dictionary<string, object>>
+            {
+                new Dictionary<string, object>
+                {
+                    ["check"] = $"@money >= {price * amount}",
+                    ["take"] = new Dictionary<string, object> { ["money"] = price * amount },
+                    ["give"] = new Dictionary<string, object> { [material.ToLower()] = amount },
+                    ["run"] = new List<string> { "sound: BLOCK_NOTE_BLOCK_PLING" }
+                },
+                new Dictionary<string, object>
+                {
+                    ["deny"] = new List<string> { "msg: &c金币不足！需要 {price * amount} 金币" }
+                }
+            };
         }
 
         /// <summary>
-        /// 创建出售（收购商店）动作
+        /// 创建出售（收购商店）动作 - 使用TrMenu原生条件判断
         /// </summary>
-        private List<string> CreateSellAction(string material, decimal price, int amount)
+        private List<Dictionary<string, object>> CreateSellAction(string material, decimal price, int amount)
         {
-            return new List<string> { $"command: /shop sell {amount} {material} {price}" };
+            return new List<Dictionary<string, object>>
+            {
+                new Dictionary<string, object>
+                {
+                    ["check"] = "@item held",
+                    ["take"] = new Dictionary<string, object> { [material.ToLower()] = amount },
+                    ["give"] = new Dictionary<string, object> { ["money"] = price * amount },
+                    ["run"] = new List<string> { "sound: BLOCK_NOTE_BLOCK_PLING" }
+                },
+                new Dictionary<string, object>
+                {
+                    ["deny"] = new List<string> { "msg: &c请手持要出售的物品！" }
+                }
+            };
         }
 
         /// <summary>
-        /// 创建出售背包所有物品的动作
+        /// 创建出售背包所有物品的动作 - 使用TrMenu原生条件判断
         /// </summary>
-        private List<string> CreateSellAllAction(string material, decimal price)
+        private List<Dictionary<string, object>> CreateSellAllAction(string material, decimal price)
         {
-            return new List<string> { $"command: /shop sell all {material} {price}" };
+            return new List<Dictionary<string, object>>
+            {
+                new Dictionary<string, object>
+                {
+                    ["check"] = "@inv empty not",
+                    ["run"] = new List<string> { $"console: shop sell all {material} {price}" }
+                },
+                new Dictionary<string, object>
+                {
+                    ["deny"] = new List<string> { "msg: &c你的背包是空的！" }
+                }
+            };
         }
 
         /// <summary>

@@ -11,6 +11,9 @@ namespace ShopProToTrMenuConverter.Models
         [YamlMember(Alias = "Title")]
         public List<string> Title { get; set; } = new List<string>();
 
+        [YamlMember(Alias = "Chest")]
+        public int Chest { get; set; } = 6;
+
         [YamlMember(Alias = "Layout")]
         public List<string> Layout { get; set; } = new List<string>();
 
@@ -63,13 +66,13 @@ namespace ShopProToTrMenuConverter.Models
     public class TrMenuIconActions
     {
         [YamlMember(Alias = "left")]
-        public List<string> Left { get; set; }
+        public List<Dictionary<string, object>> Left { get; set; }
 
         [YamlMember(Alias = "right")]
-        public List<string> Right { get; set; }
+        public List<Dictionary<string, object>> Right { get; set; }
 
         [YamlMember(Alias = "shift-right")]
-        public List<string> ShiftRight { get; set; }
+        public List<Dictionary<string, object>> ShiftRight { get; set; }
 
         [YamlMember(Alias = "null")]
         public bool? Null { get; set; }
