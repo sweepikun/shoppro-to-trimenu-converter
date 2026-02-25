@@ -28,10 +28,12 @@ jobs:
 
     - name: Create release zip
       run: |
-        $outputDir = "ShopProToTrMenuConverter/bin/Release/net472"
+        $outputDir = "bin/Release/net472"
         $zipPath = "ShopProToTrMenuConverter-net472.zip"
-        if (Test-Path $zipPath) { Remove-Item $zipPath }
-        Compress-Archive -Path "$outputDir/*" -DestinationPath $zipPath -Force
+        if (Test-Path $outputDir) {
+            if (Test-Path $zipPath) { Remove-Item $zipPath }
+            Compress-Archive -Path "$outputDir/*" -DestinationPath $zipPath -Force
+        }
       shell: pwsh
 
     - name: Get version from tag
