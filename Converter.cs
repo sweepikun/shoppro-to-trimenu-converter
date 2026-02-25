@@ -290,7 +290,7 @@ namespace ShopProToTrMenuConverter
                 .Build();
 
             _serializer = new SerializerBuilder()
-                .WithNamingConvention(NamingConventions.Null)
+                .WithNamingConvention(YamlDotNet.Serialization.NamingConventions.NamingConventions.Null)
                 .WithTypeInspector(inner => new YamlDotNet.Serialization.TypeInspectors.ReadableAndWritablePropertiesTypeInspector(inner))
                 .Build();
         }
