@@ -4,10 +4,6 @@ using ShopProToTrMenuConverter.Models;
 
 namespace ShopProToTrMenuConverter
 {
-    /// <summary>
-    /// ShopPro商店配置转TrMenu配置工具
-    /// 支持 .NET Framework 4.7.2
-    /// </summary>
     class Program
     {
         static void Main(string[] args)
@@ -69,9 +65,6 @@ namespace ShopProToTrMenuConverter
             Console.ReadKey();
         }
 
-        /// <summary>
-        /// 执行转换
-        /// </summary>
         static void RunConversion(string shopproDir, string outputDir)
         {
             if (!Directory.Exists(shopproDir))
@@ -94,34 +87,54 @@ namespace ShopProToTrMenuConverter
             Console.WriteLine("转换完成！");
         }
 
-        /// <summary>
-        /// 获取ShopPro商店目录
-        /// </summary>
         static string GetShopProDirectory()
         {
             string defaultDir = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 @"..\..\..\plugins\ShopPro\shops");
 
-            Console.Write($"请输入ShopPro商店目录路径 (默认: {defaultDir}): ");
-            string input = Console.ReadLine();
+            while (true)
+            {
+                Console.Write($"请输入ShopPro商店目录路径 (直接回车使用默认): ");
+                string input = Console.ReadLine();
 
-            return string.IsNullOrWhiteSpace(input) ? defaultDir : input.Trim('"');
+                if (string.IsNullOrWhiteSpace(input))
+                {
+                    return defaultDir;
+                }
+
+                string path = input.Trim('"').Trim();
+                if (Directory.Exists(path))
+                {
+                    return path;
+                }
+
+                Console.WriteLine($"目录不存在: {path}");
+                Console.WriteLine("请重新输入有效的路径。");
+                Console.WriteLine();
+            }
         }
 
-        /// <summary>
-        /// 获取输出目录
-        /// </summary>
         static string GetOutputDirectory()
         {
             string defaultDir = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 @"..\..\..\plugins\TrMenu\menus\商店");
 
-            Console.Write($"请输入输出目录路径 (默认: {defaultDir}): ");
-            string input = Console.ReadLine();
+            while (true)
+            {
+                Console.Write($"请输入输出目录路径 (直接回车使用默认): ");
+                string input = Console.ReadLine();
 
-            return string.IsNullOrWhiteSpace(input) ? defaultDir : input.Trim('"');
+                if (string.IsNullOrWhiteSpace(input))
+                {
+                    return defaultDir;
+                }
+
+                string path = input.Trim('"').Trim();
+                Console.WriteLine($"将创建/使用目录: {path}");
+                return path;
+            }
         }
     }
 }
