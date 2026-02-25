@@ -1,3 +1,4 @@
+using System;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace ShopProToTrMenuConverter
@@ -10,8 +11,6 @@ namespace ShopProToTrMenuConverter
 
         public string Apply(string value)
         {
-            // 转换为短横线命名 (如 is-commodity -> is-commodity)
-            // CamelCase -> hyphenated
             if (string.IsNullOrEmpty(value))
                 return value;
 
