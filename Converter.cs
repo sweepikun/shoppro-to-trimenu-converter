@@ -68,7 +68,7 @@ namespace ShopProToTrMenuConverter
                         {
                             Material = ConvertMaterial(shopItem.Material),
                             Name = shopItem.Name ?? "",
-                            LORE = processedLore
+                            Lore = processedLore
                         },
                         Actions = new TrMenuIconActions()
                     };
@@ -85,13 +85,7 @@ namespace ShopProToTrMenuConverter
                                 if (cmd.Contains("[open]"))
                                 {
                                     string target = cmd.Replace("[open]", "").Trim();
-                                    trmenuIcon.Actions.Left = new List<Dictionary<string, object>>
-                                    {
-                                        new Dictionary<string, object>
-                                        {
-                                            ["actions"] = new List<string> { $"open: {target}" }
-                                        }
-                                    };
+                                    trmenuIcon.Actions.Left = new List<string> { $"open: {target}" };
                                     break;
                                 }
                             }
@@ -108,14 +102,14 @@ namespace ShopProToTrMenuConverter
 
                         if (isBuyShop)
                         {
-                            trmenuIcon.Actions.Left = CreateBuyAction(commandMaterial, shopItem.Price, 1);
-                            trmenuIcon.Actions.Right = CreateBuyAction(commandMaterial, shopItem.Price, 64);
+                            trmenuIcon.Actions.Left = new List<string> { $"op: shop buy 1 {commandMaterial} {shopItem.Price}" };
+                            trmenuIcon.Actions.Right = new List<string> { $"op: shop buy 64 {commandMaterial} {shopItem.Price}" };
                         }
                         else
                         {
-                            trmenuIcon.Actions.Left = CreateSellAction(commandMaterial, shopItem.Price, 1);
-                            trmenuIcon.Actions.Right = CreateSellAction(commandMaterial, shopItem.Price, 64);
-                            trmenuIcon.Actions.ShiftRight = CreateSellAllAction(commandMaterial, shopItem.Price);
+                            trmenuIcon.Actions.Left = new List<string> { $"op: shop sell 1 {commandMaterial} {shopItem.Price}" };
+                            trmenuIcon.Actions.Right = new List<string> { $"op: shop sell 64 {commandMaterial} {shopItem.Price}" };
+                            trmenuIcon.Actions.ShiftRight = new List<string> { $"op: shop sell all {commandMaterial} {shopItem.Price}" };
                         }
                     }
 
@@ -162,58 +156,6 @@ namespace ShopProToTrMenuConverter
             }
 
             return result;
-        }
-
-        private List<Dictionary<string, object>> CreateBuyAction(string material, decimal price, int amount)
-        {
-            return new List<Dictionary<string, object>>
-            {
-                new Dictionary<string, object>
-                {
-                    ["check"] = $"@money >= {price * amount}",
-                    ["take"] = new Dictionary<string, object> { ["money"] = price * amount },
-                    ["give"] = new Dictionary<string, object> { [material.ToLower()] = amount },
-                    ["run"] = new List<string> { "sound: BLOCK_NOTE_BLOCK_PLING" }
-                },
-                new Dictionary<string, object>
-                {
-                    ["deny"] = new List<string> { $"msg: &c金币不足！需要 {price * amount} 金币" }
-                }
-            };
-        }
-
-        private List<Dictionary<string, object>> CreateSellAction(string material, decimal price, int amount)
-        {
-            return new List<Dictionary<string, object>>
-            {
-                new Dictionary<string, object>
-                {
-                    ["check"] = "@item held",
-                    ["take"] = new Dictionary<string, object> { [material.ToLower()] = amount },
-                    ["give"] = new Dictionary<string, object> { ["money"] = price * amount },
-                    ["run"] = new List<string> { "sound: BLOCK_NOTE_BLOCK_PLING" }
-                },
-                new Dictionary<string, object>
-                {
-                    ["deny"] = new List<string> { "msg: &c请手持要出售的物品！" }
-                }
-            };
-        }
-
-        private List<Dictionary<string, object>> CreateSellAllAction(string material, decimal price)
-        {
-            return new List<Dictionary<string, object>>
-            {
-                new Dictionary<string, object>
-                {
-                    ["check"] = "@inv empty not",
-                    ["run"] = new List<string> { $"console: shop sell all {material} {price}" }
-                },
-                new Dictionary<string, object>
-                {
-                    ["deny"] = new List<string> { "msg: &c你的背包是空的！" }
-                }
-            };
         }
 
         public void Save(TrMenuConfig config, string outputFile)
