@@ -27,17 +27,18 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: ShopProToTrMenuConverter-Windows
-        path: |
-          ShopProToTrMenuConverter/bin/Release/net472/
-          !ShopProToTrMenuConverter/bin/Release/net472/*.pdb
+        path: bin/Release/net472/
+        if-no-files-found: warn
         retention-days: 7
 
     - name: Create release zip
       run: |
-        $outputDir = "ShopProToTrMenuConverter/bin/Release/net472"
+        $outputDir = "bin/Release/net472"
         $zipPath = "ShopProToTrMenuConverter-net472.zip"
-        if (Test-Path $zipPath) { Remove-Item $zipPath }
-        Compress-Archive -Path "$outputDir/*" -DestinationPath $zipPath -Force
+        if (Test-Path $outputDir) {
+            if (Test-Path $zipPath) { Remove-Item $zipPath }
+            Compress-Archive -Path "$outputDir/*" -DestinationPath $zipPath -Force
+        }
       shell: pwsh
 
     - name: Upload release zip
