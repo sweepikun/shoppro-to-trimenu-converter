@@ -57,7 +57,6 @@ namespace ShopProToTrMenuConverter.Models
         public string Name { get; set; } = "";
 
         [YamlMember(Alias = "lore")]
-        [YamlMember(Alias = "LORE")]
         public List<string> Lore { get; set; } = new List<string>();
     }
 
