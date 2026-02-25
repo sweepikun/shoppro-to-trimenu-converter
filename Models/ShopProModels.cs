@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using YamlDotNet.Serialization;
 
 namespace ShopProToTrMenuConverter.Models
 {
@@ -7,10 +8,19 @@ namespace ShopProToTrMenuConverter.Models
     /// </summary>
     public class ShopProConfig
     {
-        public string Type { get; set; } // "buy" 或 "sell"
+        [YamlMember(Alias = "type")]
+        public string Type { get; set; }
+
+        [YamlMember(Alias = "name")]
         public string Name { get; set; }
+
+        [YamlMember(Alias = "title")]
         public string Title { get; set; }
+
+        [YamlMember(Alias = "slots")]
         public List<string> Slots { get; set; }
+
+        [YamlMember(Alias = "items")]
         public Dictionary<string, ShopProItem> Items { get; set; }
     }
 
@@ -19,16 +29,31 @@ namespace ShopProToTrMenuConverter.Models
     /// </summary>
     public class ShopProItem
     {
+        [YamlMember(Alias = "material")]
         public string Material { get; set; }
+
+        [YamlMember(Alias = "name")]
         public string Name { get; set; }
+
+        [YamlMember(Alias = "lore")]
         public List<string> Lore { get; set; }
+
+        [YamlMember(Alias = "price")]
         public decimal Price { get; set; }
-        public int? Limit { get; set; } // 每日限售
-        public int? LimitPlayer { get; set; } // 每个玩家限售
-        public bool? IsCommodity { get; set; } = true;
+
+        [YamlMember(Alias = "limit")]
+        public int? Limit { get; set; }
+
+        [YamlMember(Alias = "limit-player")]
+        public int? LimitPlayer { get; set; }
+
+        [YamlMember(Alias = "is-commodity")]
+        public bool? IsCommodity { get; set; }
+
+        [YamlMember(Alias = "commands")]
         public List<string> Commands { get; set; }
 
-        // 从ShopPro读取时可能有不同字段名
-        public object AllLimit { get; set; } // 兼容不同的limit字段
+        [YamlMember(Alias = "all-limit")]
+        public int? AllLimit { get; set; }
     }
 }
