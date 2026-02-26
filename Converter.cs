@@ -68,7 +68,7 @@ namespace ShopProToTrMenuConverter
                     string key = kvp.Key;
                     var shopItem = kvp.Value;
 
-                    var processedLore = ProcessLore(shopItem.Lore, shopItem.Price);
+                    var processedLore = ProcessLore(shopItem.Lore, shopItem.Price, shopItem.Limit, shopItem.LimitPlayer, shopItem.AllLimit);
 
                     string displayMaterial = ConvertMaterial(shopItem.Material);
                     bool hasModelData = displayMaterial.Contains("model-data");
@@ -199,7 +199,7 @@ namespace ShopProToTrMenuConverter
                                 "close",
                                 "tell: &a正在处理出售请求...",
                                 $"console: take %player_name% {commandMaterial} all",
-                                $"console: money give %player_name% {price1}",
+                                $"console: money give %player_name% {price64}",
                                 "tell: &a出售成功!",
                                 "sound: ENTITY_ARROW_HIT"
                             };
@@ -231,7 +231,7 @@ namespace ShopProToTrMenuConverter
             return material;
         }
 
-        private List<string> ProcessLore(List<string> originalLore, decimal price)
+        private List<string> ProcessLore(List<string> originalLore, decimal price, int? limit = null, int? limitPlayer = null, int? allLimit = null)
         {
             if (originalLore == null || originalLore.Count == 0)
                 return new List<string> { " " };
@@ -244,10 +244,15 @@ namespace ShopProToTrMenuConverter
                 var processedLine = line
                     .Replace("${price}", price.ToString())
                     .Replace("${price64}", price64.ToString())
+                    .Replace("${priceAll}", price64.ToString() + " (需计算)")
                     .Replace("${name}", "该物品")
                     .Replace("${balance}", "%vault_eco_balance%")
                     .Replace("{money}", "%vault_eco_balance%")
-                    .Replace("%img_money%", "%img_coin%");
+                    .Replace("%img_money%", "%img_coin%")
+                    .Replace("${limit}", limit?.ToString() ?? "无限制")
+                    .Replace("${limit-player}", limitPlayer?.ToString() ?? "无限制")
+                    .Replace("${allLimit}", allLimit?.ToString() ?? "无限制")
+                    .Replace("${limit-server}", allLimit?.ToString() ?? "无限制");
 
                 foreach (var replacement in _config.TextReplacements)
                 {
