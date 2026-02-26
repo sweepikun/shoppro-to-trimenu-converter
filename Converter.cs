@@ -252,26 +252,25 @@ namespace ShopProToTrMenuConverter
             string varTime = $"shop_limit_{itemKey}_time";
 
             string script = $@"kether:
-  - if: ""papi *%vault_eco_balance% < {price}""
-    then:
-      - tell ""&c金币不足，需要 {price} 金币!""
-      - stop
-  - set @now = ""now""
-  - set @elapsed = ""math {{{{@now - {{{{{varTime}}}}}}}}""
-  - if: ""@elapsed > 86400000""
-    then:
-      - set {{{varTime}}} = ""@now""
-      - set {{{varCount}}} = 0
-  - if: ""{{{{{varCount}}}}} >= {limit}""
-    then:
-      - tell ""&c今日购买次数已达上限 ({limit}次)!""
-      - stop
-  - tell ""&a正在处理购买请求...""
-  - run ""console: money take %player_name% {price}""
-  - run ""console: give %player_name% {material} {amount}""
-  - set {{{varCount}}} = ""math {{{{{{varCount}}} + 1}}""
-  - tell ""&a购买成功! (今日已购买: {{{{varCount}}}}/{limit})""
-  - run ""sound: ENTITY_ARROW_HIT""";
+- if 'papi *%vault_eco_balance% < {price}'
+  then:
+  - tell '&c金币不足，需要 {price} 金币!'
+  - stop
+- set @now = now
+- if '@now - {{{varTime}}} > 86400000'
+  then:
+  - set {{{varTime}}} = @now
+  - set {{{varCount}}} = 0
+- if '{{{varCount}}} >= {limit}'
+  then:
+  - tell '&c今日购买次数已达上限 ({limit}次)!'
+  - stop
+- tell '&a正在处理购买请求...'
+- run 'console: money take %player_name% {price}'
+- run 'console: give %player_name% {material} {amount}'
+- set {{{varCount}}} = '{{{varCount}}} + 1'
+- tell '&a购买成功! (今日已购买: {{{varCount}}}/{limit})'
+- run 'sound: ENTITY_ARROW_HIT'";
 
             return script;
         }
