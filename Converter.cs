@@ -30,7 +30,7 @@ namespace ShopProToTrMenuConverter
                 Chest = shopproConfig.Slots != null ? shopproConfig.Slots.Count : 6,
                 Layout = shopproConfig.Slots ?? new List<string>(),
                 Options = new TrMenuOptions { Pattern = new Dictionary<string, string>() },
-                Icons = new Dictionary<string, TrMenuIcon>()
+                Buttons = new Dictionary<string, TrMenuIcon>()
             };
 
             // 生成pattern映射
@@ -62,11 +62,15 @@ namespace ShopProToTrMenuConverter
 
                     var processedLore = ProcessLore(shopItem.Lore, shopItem.Price);
 
+                    string displayMaterial = ConvertMaterial(shopItem.Material);
+                    bool hasModelData = displayMaterial.Contains("model-data");
+                    
                     var trmenuIcon = new TrMenuIcon
                     {
                         Display = new TrMenuIconDisplay
                         {
-                            Material = ConvertMaterial(shopItem.Material),
+                            Material = hasModelData ? null : displayMaterial,
+                            Mats = hasModelData ? displayMaterial : null,
                             Name = shopItem.Name ?? "",
                             Lore = processedLore
                         },
@@ -85,35 +89,102 @@ namespace ShopProToTrMenuConverter
                                 if (cmd.Contains("[open]"))
                                 {
                                     string target = cmd.Replace("[open]", "").Trim();
-                                    trmenuIcon.Actions.Left = new List<string> { $"open: {target}" };
+                                    trmenuIcon.Actions.Left = new List<object> { $"open: {target}" };
                                     break;
                                 }
                             }
-                        }
-                        else
-                        {
-                            trmenuIcon.Actions.Null = true;
                         }
                     }
                     else
                     {
                         bool isBuyShop = string.Equals(shopproConfig.Type, "buy", StringComparison.OrdinalIgnoreCase);
-                        string commandMaterial = trmenuIcon.Display.Material.Split('{')[0].ToLowerInvariant();
+                        string commandMaterial = displayMaterial.Split('{')[0].ToLowerInvariant();
 
                         if (isBuyShop)
                         {
-                            trmenuIcon.Actions.Left = new List<string> { $"op: shop buy 1 {commandMaterial} {shopItem.Price}" };
-                            trmenuIcon.Actions.Right = new List<string> { $"op: shop buy 64 {commandMaterial} {shopItem.Price}" };
+                            decimal price1 = shopItem.Price;
+                            decimal price64 = shopItem.Price * 64;
+                            string errorMsg = "&c你的金币不足!";
+
+                            trmenuIcon.Actions.Left = new List<object>
+                            {
+                                new TrMenuActionItem
+                                {
+                                    Condition = $"check papi *%vault_eco_balance% >= *{price1}",
+                                    Actions = new List<string>
+                                    {
+                                        "close",
+                                        "tell: &a正在处理购买请求...",
+                                        $"console: money take %player_name% {price1}",
+                                        $"console: give %player_name% {commandMaterial} 1",
+                                        "tell: &a购买成功!",
+                                        "sound: ENTITY_ARROW_HIT"
+                                    },
+                                    Deny = new List<string>
+                                    {
+                                        "close",
+                                        "tell: &c金币不足，需要 " + price1 + " 金币"
+                                    }
+                                }
+                            };
+                            trmenuIcon.Actions.Right = new List<object>
+                            {
+                                new TrMenuActionItem
+                                {
+                                    Condition = $"check papi *%vault_eco_balance% >= *{price64}",
+                                    Actions = new List<string>
+                                    {
+                                        "close",
+                                        "tell: &a正在处理购买请求...",
+                                        $"console: money take %player_name% {price64}",
+                                        $"console: give %player_name% {commandMaterial} 64",
+                                        "tell: &a购买成功!",
+                                        "sound: ENTITY_ARROW_HIT"
+                                    },
+                                    Deny = new List<string>
+                                    {
+                                        "close",
+                                        "tell: &c金币不足，需要 " + price64 + " 金币"
+                                    }
+                                }
+                            };
                         }
                         else
                         {
-                            trmenuIcon.Actions.Left = new List<string> { $"op: shop sell 1 {commandMaterial} {shopItem.Price}" };
-                            trmenuIcon.Actions.Right = new List<string> { $"op: shop sell 64 {commandMaterial} {shopItem.Price}" };
-                            trmenuIcon.Actions.ShiftRight = new List<string> { $"op: shop sell all {commandMaterial} {shopItem.Price}" };
+                            decimal price1 = shopItem.Price;
+                            decimal price64 = shopItem.Price * 64;
+
+                            trmenuIcon.Actions.Left = new List<object>
+                            {
+                                "close",
+                                "tell: &a正在处理出售请求...",
+                                $"console: take %player_name% {commandMaterial} 1",
+                                $"console: money give %player_name% {price1}",
+                                "tell: &a出售成功!",
+                                "sound: ENTITY_ARROW_HIT"
+                            };
+                            trmenuIcon.Actions.Right = new List<object>
+                            {
+                                "close",
+                                "tell: &a正在处理出售请求...",
+                                $"console: take %player_name% {commandMaterial} 64",
+                                $"console: money give %player_name% {price64}",
+                                "tell: &a出售成功!",
+                                "sound: ENTITY_ARROW_HIT"
+                            };
+                            trmenuIcon.Actions.ShiftRight = new List<object>
+                            {
+                                "close",
+                                "tell: &a正在处理出售请求...",
+                                $"console: take %player_name% {commandMaterial} all",
+                                $"console: money give %player_name% {price1}",
+                                "tell: &a出售成功!",
+                                "sound: ENTITY_ARROW_HIT"
+                            };
                         }
                     }
 
-                    trmenuConfig.Icons[key] = trmenuIcon;
+                    trmenuConfig.Buttons[key] = trmenuIcon;
                 }
             }
 
@@ -151,7 +222,9 @@ namespace ShopProToTrMenuConverter
                 var processedLine = line
                     .Replace("${price}", price.ToString())
                     .Replace("${price64}", price64.ToString())
-                    .Replace("${name}", "该物品");
+                    .Replace("${name}", "该物品")
+                    .Replace("${balance}", "%vault_eco_balance%")
+                    .Replace("%img_money%", "%np_background_jinbi%");
                 result.Add(processedLine);
             }
 

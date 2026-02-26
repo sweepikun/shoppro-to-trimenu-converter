@@ -20,8 +20,8 @@ namespace ShopProToTrMenuConverter.Models
         [YamlMember(Alias = "Options")]
         public TrMenuOptions Options { get; set; } = new TrMenuOptions();
 
-        [YamlMember(Alias = "Icons")]
-        public Dictionary<string, TrMenuIcon> Icons { get; set; } = new Dictionary<string, TrMenuIcon>();
+        [YamlMember(Alias = "Buttons")]
+        public Dictionary<string, TrMenuIcon> Buttons { get; set; } = new Dictionary<string, TrMenuIcon>();
     }
 
     /// <summary>
@@ -51,7 +51,10 @@ namespace ShopProToTrMenuConverter.Models
     public class TrMenuIconDisplay
     {
         [YamlMember(Alias = "material")]
-        public string Material { get; set; } = "PAPER";
+        public string Material { get; set; }
+
+        [YamlMember(Alias = "mats")]
+        public string Mats { get; set; }
 
         [YamlMember(Alias = "name")]
         public string Name { get; set; } = "";
@@ -61,23 +64,35 @@ namespace ShopProToTrMenuConverter.Models
     }
 
     /// <summary>
-    /// TrMenu图标动作配置
+    /// TrMenu图标动作配置 - 支持复杂格式
     /// </summary>
     public class TrMenuIconActions
     {
         [YamlMember(Alias = "left")]
-        public List<string> Left { get; set; }
+        public List<object> Left { get; set; }
 
         [YamlMember(Alias = "right")]
-        public List<string> Right { get; set; }
+        public List<object> Right { get; set; }
 
         [YamlMember(Alias = "shift-right")]
-        public List<string> ShiftRight { get; set; }
+        public List<object> ShiftRight { get; set; }
 
         [YamlMember(Alias = "all")]
-        public List<string> All { get; set; }
+        public List<object> All { get; set; }
+    }
 
-        [YamlMember(Alias = "null")]
-        public bool? Null { get; set; }
+    /// <summary>
+    /// 复杂动作项（带条件检查）
+    /// </summary>
+    public class TrMenuActionItem
+    {
+        [YamlMember(Alias = "condition")]
+        public string Condition { get; set; }
+
+        [YamlMember(Alias = "actions")]
+        public List<string> Actions { get; set; }
+
+        [YamlMember(Alias = "deny")]
+        public List<string> Deny { get; set; }
     }
 }
