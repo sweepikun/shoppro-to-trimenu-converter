@@ -256,19 +256,19 @@ namespace ShopProToTrMenuConverter
   then:
   - tell '&c金币不足，需要 {price}金币!'
   - stop
-- set {_} = now
-- load {timeKey} to {_t}
-- if '_t > 0 && _ - _t > 86400000' then:
+- set @@now = now
+- load {timeKey} to @@t
+- if '@@t > 0 && @@now - @@t > 86400000' then:
   - save {countKey} as 0
   - save {timeKey} as 0
-- load {countKey} to {_c}
-- if '_c >= {limit}' then:
+- load {countKey} to @@c
+- if '@@c >= {limit}' then:
   - tell '&c今日已达上限({limit}次)'
   - stop
 - tell '&a处理中...'
 - run 'console: money take %player_name% {price}'
 - run 'console: give %player_name% {material} {amount}'
-- save {countKey} as '_c + 1'
+- save {countKey} as '@@c + 1'
 - save {timeKey} as now
 - tell '&a购买成功'
 - run 'sound: ENTITY_ARROW_HIT'";
