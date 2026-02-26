@@ -248,28 +248,29 @@ namespace ShopProToTrMenuConverter
 
         private string GenerateBuyKetherScript(string material, decimal price, int amount, int limit, string itemKey)
         {
-            string varCount = $"shop_limit_{itemKey}";
-            string varTime = $"shop_limit_{itemKey}_time";
+            string countKey = $"buy_{itemKey}";
+            string timeKey = $"buy_{itemKey}_t";
 
             string script = $@"kether:
 - if 'papi *%vault_eco_balance% < {price}'
   then:
-  - tell '&c金币不足，需要 {price} 金币!'
+  - tell '&c金币不足，需要 {price}金币!'
   - stop
-- set @now = now
-- if '@now - {{{varTime}}} > 86400000'
-  then:
-  - set {{{varTime}}} = @now
-  - set {{{varCount}}} = 0
-- if '{{{varCount}}} >= {limit}'
-  then:
-  - tell '&c今日购买次数已达上限 ({limit}次)!'
+- set {_} = now
+- load {timeKey} to {_t}
+- if '_t > 0 && _ - _t > 86400000' then:
+  - save {countKey} as 0
+  - save {timeKey} as 0
+- load {countKey} to {_c}
+- if '_c >= {limit}' then:
+  - tell '&c今日已达上限({limit}次)'
   - stop
-- tell '&a正在处理购买请求...'
+- tell '&a处理中...'
 - run 'console: money take %player_name% {price}'
 - run 'console: give %player_name% {material} {amount}'
-- set {{{varCount}}} = '{{{varCount}}} + 1'
-- tell '&a购买成功! (今日已购买: {{{varCount}}}/{limit})'
+- save {countKey} as '_c + 1'
+- save {timeKey} as now
+- tell '&a购买成功'
 - run 'sound: ENTITY_ARROW_HIT'";
 
             return script;
