@@ -224,7 +224,8 @@ namespace ShopProToTrMenuConverter
                     .Replace("${price64}", price64.ToString())
                     .Replace("${name}", "该物品")
                     .Replace("${balance}", "%vault_eco_balance%")
-                    .Replace("%img_money%", "%np_background_jinbi%");
+                    .Replace("{money}", "%vault_eco_balance%")
+                    .Replace("%img_money%", "%img_coin%");
                 result.Add(processedLine);
             }
 
