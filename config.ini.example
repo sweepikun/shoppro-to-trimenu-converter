@@ -15,9 +15,11 @@
 # 是否使用数据库存储每日限制 (默认true)
 # use_database_limit = true
 
-# Lore 占位符替换 (可选)
-# 格式: lore_原内容 = 替换内容
-# 或: replace_原内容 = 替换内容
-lore_{money} = %vault_eco_balance%
-lore_%img_money% = %img_coin%
-lore_$balance = %vault_eco_balance%
+# 全文本替换 (可选)
+# 格式: replace_原内容 = 替换内容
+# 会对整个生成的YAML文件进行全文匹配替换
+replace_{money} = %vault_eco_balance%
+replace_%img_money% = %img_coin%
+replace_$balance = %vault_eco_balance%
+replace_money take = eco take
+replace_money give = eco give

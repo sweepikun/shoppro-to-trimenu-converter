@@ -13,7 +13,7 @@ namespace ShopProToTrMenuConverter
         public string BuyCommand { get; set; } = "money take %player_name% {price} && give %player_name% {material} {amount}";
         public string SellCommand { get; set; } = "take %player_name% {material} {amount} && money give %player_name% {price}";
         
-        public Dictionary<string, string> LoreReplacements { get; set; } = new Dictionary<string, string>();
+        public List<KeyValuePair<string, string>> TextReplacements { get; set; } = new List<KeyValuePair<string, string>>();
         
         public bool UseDatabaseLimit { get; set; } = true;
 
@@ -66,10 +66,10 @@ namespace ShopProToTrMenuConverter
                         config.UseDatabaseLimit = value.Equals("true", StringComparison.OrdinalIgnoreCase);
                         break;
                     default:
-                        if (key.StartsWith("lore_") || key.StartsWith("replace_"))
+                        if (key.StartsWith("replace_"))
                         {
-                            string from = key.StartsWith("lore_") ? key.Substring(5) : key.Substring(8);
-                            config.LoreReplacements[from] = value;
+                            string from = key.Substring(8);
+                            config.TextReplacements.Add(new KeyValuePair<string, string>(from, value));
                         }
                         break;
                 }
@@ -77,6 +77,15 @@ namespace ShopProToTrMenuConverter
 
             Console.WriteLine("配置文件加载完成");
             return config;
+        }
+
+        public string ApplyReplacements(string text)
+        {
+            foreach (var replacement in TextReplacements)
+            {
+                text = text.Replace(replacement.Key, replacement.Value);
+            }
+            return text;
         }
     }
 }

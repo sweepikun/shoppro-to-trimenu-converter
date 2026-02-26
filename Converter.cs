@@ -249,7 +249,7 @@ namespace ShopProToTrMenuConverter
                     .Replace("{money}", "%vault_eco_balance%")
                     .Replace("%img_money%", "%img_coin%");
 
-                foreach (var replacement in _config.LoreReplacements)
+                foreach (var replacement in _config.TextReplacements)
                 {
                     processedLine = processedLine.Replace(replacement.Key, replacement.Value);
                 }
@@ -292,7 +292,14 @@ namespace ShopProToTrMenuConverter
 
         public void Save(TrMenuConfig config, string outputFile)
         {
-            _yamlSerializer.Serialize(config, outputFile);
+            string yamlContent = _yamlSerializer.Serialize(config);
+            
+            if (_config.TextReplacements.Count > 0)
+            {
+                yamlContent = _config.ApplyReplacements(yamlContent);
+            }
+            
+            System.IO.File.WriteAllText(outputFile, yamlContent);
         }
 
         public void ConvertAll(string shopproDir, string outputDir)
@@ -347,6 +354,11 @@ namespace ShopProToTrMenuConverter
         {
             string content = System.IO.File.ReadAllText(filePath);
             return _deserializer.Deserialize<T>(content);
+        }
+
+        public string Serialize<T>(T obj)
+        {
+            return _serializer.Serialize(obj);
         }
 
         public void Serialize<T>(T obj, string filePath)
