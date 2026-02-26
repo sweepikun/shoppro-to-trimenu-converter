@@ -176,33 +176,13 @@ namespace ShopProToTrMenuConverter
                             decimal price1 = shopItem.Price;
                             decimal price64 = shopItem.Price * 64;
 
-                            trmenuIcon.Actions.Left = new List<object>
-                            {
-                                "close",
-                                "tell: &a正在处理出售请求...",
-                                $"console: take %player_name% {commandMaterial} 1",
-                                $"console: money give %player_name% {price1}",
-                                "tell: &a出售成功!",
-                                "sound: ENTITY_ARROW_HIT"
-                            };
-                            trmenuIcon.Actions.Right = new List<object>
-                            {
-                                "close",
-                                "tell: &a正在处理出售请求...",
-                                $"console: take %player_name% {commandMaterial} 64",
-                                $"console: money give %player_name% {price64}",
-                                "tell: &a出售成功!",
-                                "sound: ENTITY_ARROW_HIT"
-                            };
-                            trmenuIcon.Actions.ShiftRight = new List<object>
-                            {
-                                "close",
-                                "tell: &a正在处理出售请求...",
-                                $"console: take %player_name% {commandMaterial} all",
-                                $"console: money give %player_name% {price64}",
-                                "tell: &a出售成功!",
-                                "sound: ENTITY_ARROW_HIT"
-                            };
+                            string sellScript1 = GenerateSellKetherScript(commandMaterial, price1, 1, itemKey);
+                            string sellScript64 = GenerateSellKetherScript(commandMaterial, price64, 64, itemKey);
+                            string sellScriptAll = GenerateSellAllKetherScript(commandMaterial, price1, itemKey);
+
+                            trmenuIcon.Actions.Left = new List<object> { sellScript1 };
+                            trmenuIcon.Actions.Right = new List<object> { sellScript64 };
+                            trmenuIcon.Actions.ShiftRight = new List<object> { sellScriptAll };
                         }
                     }
 
@@ -290,6 +270,35 @@ namespace ShopProToTrMenuConverter
 - save {countKey} as '@@c + 1'
 - save {timeKey} as now
 - tell '&a购买成功'
+- run 'sound: ENTITY_ARROW_HIT'";
+
+            return script;
+        }
+
+        private string GenerateSellKetherScript(string material, decimal price, int amount, string itemKey)
+        {
+            string script = $@"kether:
+- take item {material} {amount} from player
+- give money {price} to player
+- tell '&a出售成功! {amount}个 {material} -> {price}金币'
+- run 'sound: ENTITY_ARROW_HIT'";
+
+            return script;
+        }
+
+        private string GenerateSellAllKetherScript(string material, decimal price, string itemKey)
+        {
+            string priceKey = $"sell_price_{itemKey}";
+
+            string script = $@"kether:
+- set @count = 'playeritemcount {material}'
+- if '@count <= 0' then:
+  - tell '&c你没有 {material}!'
+  - stop
+- set @price = '@count * {price}'
+- take item {material} @count from player
+- give money @price to player
+- tell '&a出售成功! @count个 {material} -> @price金币'
 - run 'sound: ENTITY_ARROW_HIT'";
 
             return script;
