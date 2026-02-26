@@ -99,55 +99,69 @@ namespace ShopProToTrMenuConverter
                     {
                         bool isBuyShop = string.Equals(shopproConfig.Type, "buy", StringComparison.OrdinalIgnoreCase);
                         string commandMaterial = displayMaterial.Split('{')[0].ToLowerInvariant();
+                        string itemKey = $"{shopproConfig.Name}_{key}".ToLowerInvariant().Replace(" ", "_");
+                        int? limitPlayer = shopItem.LimitPlayer;
+                        bool hasLimit = limitPlayer.HasValue && limitPlayer.Value > 0;
 
                         if (isBuyShop)
                         {
                             decimal price1 = shopItem.Price;
                             decimal price64 = shopItem.Price * 64;
-                            string errorMsg = "&c你的金币不足!";
 
-                            trmenuIcon.Actions.Left = new List<object>
+                            if (hasLimit)
                             {
-                                new TrMenuActionItem
-                                {
-                                    Condition = $"check papi *%vault_eco_balance% >= *{price1}",
-                                    Actions = new List<string>
-                                    {
-                                        "close",
-                                        "tell: &a正在处理购买请求...",
-                                        $"console: money take %player_name% {price1}",
-                                        $"console: give %player_name% {commandMaterial} 1",
-                                        "tell: &a购买成功!",
-                                        "sound: ENTITY_ARROW_HIT"
-                                    },
-                                    Deny = new List<string>
-                                    {
-                                        "close",
-                                        "tell: &c金币不足，需要 " + price1 + " 金币"
-                                    }
-                                }
-                            };
-                            trmenuIcon.Actions.Right = new List<object>
+                                int limit = limitPlayer.Value;
+                                string ketherScript1 = GenerateBuyKetherScript(commandMaterial, price1, 1, limit, itemKey);
+                                string ketherScript64 = GenerateBuyKetherScript(commandMaterial, price64, 64, limit, itemKey);
+
+                                trmenuIcon.Actions.Left = new List<object> { ketherScript1 };
+                                trmenuIcon.Actions.Right = new List<object> { ketherScript64 };
+                            }
+                            else
                             {
-                                new TrMenuActionItem
+                                trmenuIcon.Actions.Left = new List<object>
                                 {
-                                    Condition = $"check papi *%vault_eco_balance% >= *{price64}",
-                                    Actions = new List<string>
+                                    new TrMenuActionItem
                                     {
-                                        "close",
-                                        "tell: &a正在处理购买请求...",
-                                        $"console: money take %player_name% {price64}",
-                                        $"console: give %player_name% {commandMaterial} 64",
-                                        "tell: &a购买成功!",
-                                        "sound: ENTITY_ARROW_HIT"
-                                    },
-                                    Deny = new List<string>
-                                    {
-                                        "close",
-                                        "tell: &c金币不足，需要 " + price64 + " 金币"
+                                        Condition = $"check papi *%vault_eco_balance% >= *{price1}",
+                                        Actions = new List<string>
+                                        {
+                                            "close",
+                                            "tell: &a正在处理购买请求...",
+                                            $"console: money take %player_name% {price1}",
+                                            $"console: give %player_name% {commandMaterial} 1",
+                                            "tell: &a购买成功!",
+                                            "sound: ENTITY_ARROW_HIT"
+                                        },
+                                        Deny = new List<string>
+                                        {
+                                            "close",
+                                            "tell: &c金币不足，需要 " + price1 + " 金币"
+                                        }
                                     }
-                                }
-                            };
+                                };
+                                trmenuIcon.Actions.Right = new List<object>
+                                {
+                                    new TrMenuActionItem
+                                    {
+                                        Condition = $"check papi *%vault_eco_balance% >= *{price64}",
+                                        Actions = new List<string>
+                                        {
+                                            "close",
+                                            "tell: &a正在处理购买请求...",
+                                            $"console: money take %player_name% {price64}",
+                                            $"console: give %player_name% {commandMaterial} 64",
+                                            "tell: &a购买成功!",
+                                            "sound: ENTITY_ARROW_HIT"
+                                        },
+                                        Deny = new List<string>
+                                        {
+                                            "close",
+                                            "tell: &c金币不足，需要 " + price64 + " 金币"
+                                        }
+                                    }
+                                };
+                            }
                         }
                         else
                         {
@@ -230,6 +244,36 @@ namespace ShopProToTrMenuConverter
             }
 
             return result;
+        }
+
+        private string GenerateBuyKetherScript(string material, decimal price, int amount, int limit, string itemKey)
+        {
+            string varCount = $"shop_limit_{itemKey}";
+            string varTime = $"shop_limit_{itemKey}_time";
+
+            string script = $@"kether:
+  - if: ""papi *%vault_eco_balance% < {price}""
+    then:
+      - tell ""&c金币不足，需要 {price} 金币!""
+      - stop
+  - set @now = ""now""
+  - set @elapsed = ""math {{{{@now - {{{{{varTime}}}}}}}}""
+  - if: ""@elapsed > 86400000""
+    then:
+      - set {{{varTime}}} = ""@now""
+      - set {{{varCount}}} = 0
+  - if: ""{{{{{varCount}}}}} >= {limit}""
+    then:
+      - tell ""&c今日购买次数已达上限 ({limit}次)!""
+      - stop
+  - tell ""&a正在处理购买请求...""
+  - run ""console: money take %player_name% {price}""
+  - run ""console: give %player_name% {material} {amount}""
+  - set {{{varCount}}} = ""math {{{{{{varCount}}} + 1}}""
+  - tell ""&a购买成功! (今日已购买: {{{{varCount}}}}/{limit})""
+  - run ""sound: ENTITY_ARROW_HIT""";
+
+            return script;
         }
 
         public void Save(TrMenuConfig config, string outputFile)
