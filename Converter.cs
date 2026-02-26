@@ -9,10 +9,18 @@ namespace ShopProToTrMenuConverter
     public class ShopProToTrMenuConverter
     {
         private readonly YamlSerializer _yamlSerializer;
+        private readonly ConverterConfig _config;
 
         public ShopProToTrMenuConverter()
         {
             _yamlSerializer = new YamlSerializer();
+            _config = new ConverterConfig();
+        }
+
+        public ShopProToTrMenuConverter(ConverterConfig config)
+        {
+            _yamlSerializer = new YamlSerializer();
+            _config = config ?? new ConverterConfig();
         }
 
         public TrMenuConfig Convert(string shopproFile, out string menuName)
@@ -240,6 +248,12 @@ namespace ShopProToTrMenuConverter
                     .Replace("${balance}", "%vault_eco_balance%")
                     .Replace("{money}", "%vault_eco_balance%")
                     .Replace("%img_money%", "%img_coin%");
+
+                foreach (var replacement in _config.LoreReplacements)
+                {
+                    processedLine = processedLine.Replace(replacement.Key, replacement.Value);
+                }
+
                 result.Add(processedLine);
             }
 

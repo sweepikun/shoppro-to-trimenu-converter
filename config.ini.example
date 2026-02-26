@@ -1,0 +1,23 @@
+# ShopPro to TrMenu Converter 配置文件
+# 将此文件复制到程序运行目录并重命名为 config.ini
+
+# 输入输出目录 (可选)
+# input = E:\aaa\plugins\ShopPro\shops
+# output = E:\aaa\plugins\TrMenu\menus\商店
+
+# 购买命令模板 (可选)
+# 使用 {price}, {material}, {amount}, {player_name} 占位符
+# buy_command = money take %player_name% {price} && give %player_name% {material} {amount}
+
+# 出售命令模板 (可选)
+# sell_command = take %player_name% {material} {amount} && money give %player_name% {price}
+
+# 是否使用数据库存储每日限制 (默认true)
+# use_database_limit = true
+
+# Lore 占位符替换 (可选)
+# 格式: lore_原内容 = 替换内容
+# 或: replace_原内容 = 替换内容
+lore_{money} = %vault_eco_balance%
+lore_%img_money% = %img_coin%
+lore_$balance = %vault_eco_balance%

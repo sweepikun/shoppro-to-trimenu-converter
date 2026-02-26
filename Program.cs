@@ -8,10 +8,12 @@ namespace ShopProToTrMenuConverter
     {
         static void Main(string[] args)
         {
-            // 如果提供了命令行参数，直接使用
+            string configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.ini");
+            var config = ConverterConfig.Load(configPath);
+
             if (args.Length >= 2)
             {
-                RunConversion(args[0], args[1]);
+                RunConversion(args[0], args[1], config);
                 return;
             }
 
@@ -21,11 +23,10 @@ namespace ShopProToTrMenuConverter
 
             try
             {
-                // 检测是否是测试ShopPro目录
-                string testShopProDir = @"E:\aaa\plugins\ShopPro\shops";
-                string testOutputDir = @"E:\aaa\plugins\TrMenu\menus\商店";
+                string testShopProDir = config.InputDir ?? @"E:\aaa\plugins\ShopPro\shops";
+                string testOutputDir = config.OutputDir ?? @"E:\aaa\plugins\TrMenu\menus\商店";
 
-                if (Directory.Exists(testShopProDir))
+                if (Directory.Exists(testShopProDir) && config.InputDir == null)
                 {
                     Console.WriteLine("检测到默认Minecraft服务器环境");
                     Console.Write($"是否转换到默认输出目录? (Y/n): ");
@@ -34,13 +35,13 @@ namespace ShopProToTrMenuConverter
 
                     if (key.Key == ConsoleKey.Y || key.Key == ConsoleKey.Enter)
                     {
-                        RunConversion(testShopProDir, testOutputDir);
+                        RunConversion(testShopProDir, testOutputDir, config);
                         return;
                     }
                 }
 
-                string shopproDir = GetShopProDirectory();
-                string outputDir = GetOutputDirectory();
+                string shopproDir = GetShopProDirectory(config.InputDir);
+                string outputDir = GetOutputDirectory(config.OutputDir);
 
                 Console.WriteLine();
                 Console.WriteLine("开始转换...");
@@ -48,7 +49,7 @@ namespace ShopProToTrMenuConverter
                 Console.WriteLine($"输出目录: {outputDir}");
                 Console.WriteLine();
 
-                var converter = new ShopProToTrMenuConverter();
+                var converter = new ShopProToTrMenuConverter(config);
                 converter.ConvertAll(shopproDir, outputDir);
 
                 Console.WriteLine();
@@ -65,7 +66,7 @@ namespace ShopProToTrMenuConverter
             Console.ReadKey();
         }
 
-        static void RunConversion(string shopproDir, string outputDir)
+        static void RunConversion(string shopproDir, string outputDir, ConverterConfig config)
         {
             if (!Directory.Exists(shopproDir))
             {
@@ -80,16 +81,16 @@ namespace ShopProToTrMenuConverter
             Console.WriteLine($"输出目录: {outputDir}");
             Console.WriteLine();
 
-            var converter = new ShopProToTrMenuConverter();
+            var converter = new ShopProToTrMenuConverter(config);
             converter.ConvertAll(shopproDir, outputDir);
 
             Console.WriteLine();
             Console.WriteLine("转换完成！");
         }
 
-        static string GetShopProDirectory()
+        static string GetShopProDirectory(string defaultDir)
         {
-            string defaultDir = Path.Combine(
+            string dir = defaultDir ?? Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 @"..\..\..\plugins\ShopPro\shops");
 
@@ -100,7 +101,7 @@ namespace ShopProToTrMenuConverter
 
                 if (string.IsNullOrWhiteSpace(input))
                 {
-                    return defaultDir;
+                    return dir;
                 }
 
                 string path = input.Trim('"').Trim();
@@ -115,9 +116,9 @@ namespace ShopProToTrMenuConverter
             }
         }
 
-        static string GetOutputDirectory()
+        static string GetOutputDirectory(string defaultDir)
         {
-            string defaultDir = Path.Combine(
+            string dir = defaultDir ?? Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
                 @"..\..\..\plugins\TrMenu\menus\商店");
 
@@ -128,7 +129,7 @@ namespace ShopProToTrMenuConverter
 
                 if (string.IsNullOrWhiteSpace(input))
                 {
-                    return defaultDir;
+                    return dir;
                 }
 
                 string path = input.Trim('"').Trim();
