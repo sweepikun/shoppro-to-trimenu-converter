@@ -175,10 +175,10 @@ namespace ShopProToTrMenuConverter
                         {
                             decimal price1 = shopItem.Price;
                             decimal price64 = shopItem.Price * 64;
-
-                            string sellScript1 = GenerateSellKetherScript(commandMaterial, price1, 1, itemKey);
-                            string sellScript64 = GenerateSellKetherScript(commandMaterial, price64, 64, itemKey);
-                            string sellScriptAll = GenerateSellAllKetherScript(commandMaterial, price1, itemKey);
+                            int? limitPlayer = shopItem.LimitPlayer;
+                            string sellScript1 = GenerateSellKetherScript(commandMaterial, price1, 1, itemKey, limitPlayer);
+                            string sellScript64 = GenerateSellKetherScript(commandMaterial, price64, 64, itemKey, limitPlayer);
+                            string sellScriptAll = GenerateSellAllKetherScript(commandMaterial, price1, itemKey, limitPlayer);
 
                             trmenuIcon.Actions.Left = new List<object> { sellScript1 };
                             trmenuIcon.Actions.Right = new List<object> { sellScript64 };
@@ -275,29 +275,72 @@ namespace ShopProToTrMenuConverter
             return script;
         }
 
-        private string GenerateSellKetherScript(string material, decimal price, int amount, string itemKey)
+        private string GenerateSellKetherScript(string material, decimal price, int amount, string itemKey, int? limit = null)
         {
-            string script = $@"kether:
+            string countKey = $"sell_{itemKey}";
+            string timeKey = $"sell_{itemKey}_t";
+            
+            string limitCheck = "";
+            if (limit.HasValue && limit.Value > 0)
+            {
+                limitCheck = $@"
+- set @@now = now
+- load {timeKey} to @@t
+- if '@@t > 0 && @@now - @@t > 86400000' then:
+  - save {countKey} as 0
+  - save {timeKey} as 0
+- load {countKey} to @@c
+- if '@@c + {amount} > {limit.Value}' then:
+  - tell '&c今日出售次数已达上限 ({limit.Value}次)'
+  - stop";
+            }
+
+            string script = $@"kether:{limitCheck}
 - take item {material} {amount} from player
 - give money {price} to player
+- save {countKey} as '@@c + {amount}'{(limit.HasValue ? $@"
+- save {timeKey} as now" : "")}
 - tell '&a出售成功! {amount}个 {material} -> {price}金币'
 - run 'sound: ENTITY_ARROW_HIT'";
 
             return script;
         }
 
-        private string GenerateSellAllKetherScript(string material, decimal price, string itemKey)
+        private string GenerateSellAllKetherScript(string material, decimal price, string itemKey, int? limit = null)
         {
-            string priceKey = $"sell_price_{itemKey}";
+            string countKey = $"sell_{itemKey}";
+            string timeKey = $"sell_{itemKey}_t";
+            
+            string limitCheck = "";
+            string limitUpdate = "";
+            if (limit.HasValue && limit.Value > 0)
+            {
+                limitCheck = $@"
+- set @@now = now
+- load {timeKey} to @@t
+- if '@@t > 0 && @@now - @@t > 86400000' then:
+  - save {countKey} as 0
+  - save {timeKey} as 0
+- load {countKey} to @@c
+- set @remaining = '{limit.Value} - @@c'
+- if '@remaining <= 0' then:
+  - tell '&c今日出售次数已达上限 ({limit.Value}次)'
+  - stop";
+                limitUpdate = $@"
+- save {countKey} as '@@c + @count'
+- save {timeKey} as now";
+            }
 
-            string script = $@"kether:
+            string script = $@"kether:{limitCheck}
 - set @count = 'playeritemcount {material}'
 - if '@count <= 0' then:
   - tell '&c你没有 {material}!'
-  - stop
+  - stop{(limit.HasValue ? $@"
+- if '@count > @remaining' then:
+  - set @count = @remaining" : "")}
 - set @price = '@count * {price}'
 - take item {material} @count from player
-- give money @price to player
+- give money @price to player{limitUpdate}
 - tell '&a出售成功! @count个 {material} -> @price金币'
 - run 'sound: ENTITY_ARROW_HIT'";
 
