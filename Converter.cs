@@ -175,7 +175,6 @@ namespace ShopProToTrMenuConverter
                         {
                             decimal price1 = shopItem.Price;
                             decimal price64 = shopItem.Price * 64;
-                            int? limitPlayer = shopItem.LimitPlayer;
                             string sellScript1 = GenerateSellKetherScript(commandMaterial, price1, 1, itemKey, limitPlayer);
                             string sellScript64 = GenerateSellKetherScript(commandMaterial, price64, 64, itemKey, limitPlayer);
                             string sellScriptAll = GenerateSellAllKetherScript(commandMaterial, price1, itemKey, limitPlayer);
